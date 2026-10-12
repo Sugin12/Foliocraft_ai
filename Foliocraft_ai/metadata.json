@@ -1,0 +1,6 @@
+{
+  "name": "FolioCraft AI Portfolio Builder",
+  "description": "A modern multi-step portfolio builder featuring pre-populated mock dataset, AI-powered Biography drafts via Gemini, custom skill suggestions, multiple responsive templates, viewport toggles, print PDF support, and URL sharing.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER"]
+}

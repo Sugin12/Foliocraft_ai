@@ -1,0 +1,80 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net: Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper Primitives
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() 
+        && request.auth.token.email == "suginjoshuva@gmail.com";
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // Feedbacks collection rules
+    match /feedbacks/{feedbackId} {
+      // Allow general read / query of only approved feedback list, or everything for admin auditing
+      allow get: if resource.data.approved == true || isAdmin();
+      allow list: if resource.data.approved == true || isAdmin();
+
+      // Submit feedback: Anyone can submit but under strict criteria (must be unapproved first, with server timestamps)
+      allow create: if isValidId(feedbackId)
+        && incoming().keys().hasAll(['name', 'role', 'message', 'rating', 'approved', 'createdAt'])
+        && incoming().keys().size() == 6
+        && incoming().name is string && incoming().name.size() > 0 && incoming().name.size() <= 100
+        && incoming().role is string && incoming().role.size() > 0 && incoming().role.size() <= 100
+        && incoming().message is string && incoming().message.size() > 0 && incoming().message.size() <= 2000
+        && incoming().rating is int && incoming().rating >= 1 && incoming().rating <= 5
+        && incoming().approved == false
+        && incoming().createdAt == request.time;
+
+      // Moderation update & permanent removal are strictly restricted to admin authority
+      allow update, delete: if isAdmin();
+    }
+
+    // Portfolios collection rules
+    match /portfolios/{portfolioId} {
+      // Allow single document load (recruiters/viewers do not need to sign in to see a shared portfolio)
+      allow get: if true;
+
+      // Allow listing portfolios only for the logged-in owner who created them
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+
+      // Creation validation: must be signed in, ownerId matches authentic user, timestamps match request time
+      allow create: if isSignedIn()
+        && isValidId(portfolioId)
+        && incoming().ownerId == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      // Modification validation: must be sign-in owner, ownerId and createdAt are immutable, updatedAt matches request time
+      allow update: if isSignedIn()
+        && existing().ownerId == request.auth.uid
+        && incoming().ownerId == existing().ownerId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+
+      // Deletion: owner only
+      allow delete: if isSignedIn()
+        && existing().ownerId == request.auth.uid;
+    }
+  }
+}

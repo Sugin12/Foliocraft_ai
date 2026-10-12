@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "portfolio": {
+      "title": "Portfolio",
+      "description": "User created professional portfolio data.",
+      "type": "object",
+      "properties": {
+        "basicDetails": {
+          "type": "object",
+          "description": "Personal name, tagline, email, location etc."
+        },
+        "educations": {
+          "type": "array",
+          "description": "Chronological educational records"
+        },
+        "skills": {
+          "type": "array",
+          "description": "Skill string tags list"
+        },
+        "experiences": {
+          "type": "array",
+          "description": "List of professional or tutor role logs"
+        },
+        "projects": {
+          "type": "array",
+          "description": "Project artifacts list"
+        },
+        "certificates": {
+          "type": "array",
+          "description": "Verifiable certification logs"
+        },
+        "socialLinks": {
+          "type": "object",
+          "description": "LinkedIn, GitHub, instagram and website URLs"
+        },
+        "template": {
+          "type": "string",
+          "description": "Visual preset template choice"
+        },
+        "aiTemplateConfig": {
+          "type": "object",
+          "description": "Theme style parameters made custom by AI"
+        },
+        "ownerId": {
+          "type": "string",
+          "description": "User UID of the creator who registered this portfolio"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of initial registration"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of most recent editing"
+        }
+      },
+      "required": ["basicDetails", "ownerId", "createdAt", "updatedAt"]
+    },
+    "feedback": {
+      "title": "Feedback",
+      "description": "Direct user review submitted upon share or download.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The reviewer's name"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role of the reviewer (e.g. Student, Developer)"
+        },
+        "message": {
+          "type": "string",
+          "description": "Feedback message text"
+        },
+        "rating": {
+          "type": "integer",
+          "description": "Star rating out of 5"
+        },
+        "approved": {
+          "type": "boolean",
+          "description": "Approval boolean flag for display as testimonial"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Feedback timestamp"
+        }
+      },
+      "required": ["name", "role", "message", "rating", "approved", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/portfolios/{portfolioId}": {
+      "schema": "portfolio",
+      "description": "User-owned portfolios collection mapped to cloud persistence."
+    },
+    "/feedbacks/{feedbackId}": {
+      "schema": "feedback",
+      "description": "All public/private user feedbacks list."
+    }
+  }
+}
